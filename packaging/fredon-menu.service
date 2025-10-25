@@ -1,0 +1,27 @@
+[Unit]
+Description=Fredon Menu Application Launcher
+Documentation=https://fredon-menu.readthedocs.io/
+After=graphical-session.target hyprland.service
+Wants=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/fredon-menu --config %h/.config/fredon-menu/config.json
+Restart=on-failure
+RestartSec=5
+Environment=DISPLAY=:1
+Environment=WAYLAND_DISPLAY=wayland-1
+
+# Security settings
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=%h/.config/fredon-menu %h/.cache/fredon-menu %h/.local/share/fredon-menu
+
+# Resource limits
+MemoryMax=100M
+CPUQuota=50%
+
+[Install]
+WantedBy=default.target

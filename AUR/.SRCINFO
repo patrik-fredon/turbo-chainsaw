@@ -1,0 +1,13 @@
+pkgbase = fredon-menu-git
+pkgver = r8.4f0e1b4
+pkgrel = 1
+url = https://github.com/your-username/fredon-menu.git
+arch = x86_64
+license = MIT
+depends = python>=3.11 python-gobject>=3.42.0 gtk3>=3.24.0 gtk-layer-shell>=0.8.0 gdk-pixbuf2>=2.42.0 python-pillow>=9.0.0 python-watchdog>=2.1.0
+makedepends = python-build python-installer python-setuptools python-wheel git
+optdepends = libnotify: Desktop notifications xdg-utils: Default application launching
+provides = fredon-menu
+conflicts = fredon-menu
+source = git+https://github.com/your-username/fredon-menu.git#branch=main
+md5sums = SKIP

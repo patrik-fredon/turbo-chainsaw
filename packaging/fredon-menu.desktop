@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Fredon Menu
+Comment=A modern, customizable application launcher for Hyprland/Wayland
+Exec=fredon-menu
+Icon=fredon-menu
+Terminal=false
+Categories=System;Utility;Launcher;
+Keywords=launcher;menu;applications;hyprland;wayland;
+StartupNotify=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=false

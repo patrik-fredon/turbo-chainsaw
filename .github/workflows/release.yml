@@ -1,0 +1,153 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: patrik-fredon/fredon-menu
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install build setuptools wheel
+
+      - name: Build package
+        run: |
+          python -m build
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION=$(python -c "
+import sys
+sys.path.insert(0, 'src')
+from menu import __version__
+print(__version__)
+          ")
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Create Release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref_name }}
+          release_name: Fredon Menu ${{ steps.version.outputs.version }}
+          body_path: CHANGELOG.md
+          draft: false
+          prerelease: false
+
+      - name: Upload Release Assets
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: dist/
+          asset_name: fredon-menu-${{ steps.version.outputs.version }}-py3-none-any.whl
+          asset_content_type: application/zip
+
+  build-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12']
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: patrik-fredon/fredon-menu
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libgirepository1.0-dev libcairo2-dev libpango1.0-dev gir1.2-gtk-3.0 gir1.2-gdkpixbuf-2.0
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run tests
+        run: |
+          python tests/run_tests.py
+
+      - name: Check code style
+        run: |
+          black --check src/ tests/
+          flake8 src/ tests/
+          mypy src/
+
+  test-installation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: patrik-fredon/fredon-menu
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgtk-3-dev libgirepository1.0-dev libcairo2-dev libpango1.0-dev gir1.2-gtk-3.0 gir1.2-gdkpixbuf-2.0
+
+      - name: Build and install package
+        run: |
+          python -m pip install --upgrade pip
+          python -m build
+          pip install dist/*.whl
+
+      - name: Test basic functionality
+        run: |
+          fredon-menu --version
+          fredon-menu --help
+
+  build-arch-package:
+    runs-on: ubuntu-latest
+    container:
+      image: archlinux:latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          repository: patrik-fredon/fredon-menu
+
+      - name: Install dependencies
+        run: |
+          pacman -Syu --noconfirm
+          pacman -S --noconfirm python python-pip python-setuptools python-wheel
+          pacman -S --noconfirm gtk3 python-gobject python-pillow python-watchdog
+          pacman -S --noconfirm git base-devel
+
+      - name: Build package
+        run: |
+          cd packaging
+          makepkg -s --noconfirm
+
+      - name: Test package
+        run: |
+          pacman -U --noconfirm *.pkg.tar.zst
+          fredon-menu --version
