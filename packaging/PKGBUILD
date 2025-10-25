@@ -5,7 +5,7 @@ pkgver=1.0.0
 pkgrel=1
 pkgdesc="A modern, customizable application launcher for Hyprland/Wayland"
 arch=('x86_64')
-url="https://github.com/your-username/fredon-menu"
+url="https://github.com/patrik-fredon/fredon-menu"
 license=('MIT')
 depends=(
     'python>=3.11'
@@ -27,7 +27,7 @@ optdepends=(
     'xdg-utils: Default application launching'
 )
 source=(
-    "$pkgname-$pkgver.tar.gz::https://github.com/your-username/$pkgname/archive/v$pkgver.tar.gz"
+    "$pkgname-$pkgver.tar.gz::https://github.com/patrik-fredon/$pkgname/archive/v$pkgver.tar.gz"
 )
 sha256sums=(
     'SKIP'  # Replace with actual checksum when releasing

@@ -48,7 +48,7 @@ systemctl --user enable --now fredon-menu.service
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/fredon-menu.git
+git clone https://github.com/patrik-fredon/fredon-menu.git
 cd fredon-menu
 
 # Install dependencies
@@ -75,7 +75,7 @@ systemctl --user enable --now fredon-menu.service
 
 ```bash
 # Clone for development
-git clone https://github.com/your-username/fredon-menu.git
+git clone https://github.com/patrik-fredon/fredon-menu.git
 cd fredon-menu
 
 # Create virtual environment
@@ -387,7 +387,7 @@ fredon-menu --validate-config
 
 ### Getting Help
 
-- **GitHub Issues**: https://github.com/your-username/fredon-menu/issues
+- **GitHub Issues**: https://github.com/patrik-fredon/fredon-menu/issues
 - **Arch Linux Forum**: https://bbs.archlinux.org/
 - **Hyprland Discord**: https://discord.gg/hyprland
 - **Documentation**: https://fredon-menu.readthedocs.io/

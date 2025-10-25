@@ -47,7 +47,7 @@ When creating an issue, include:
 
 1. **Fork and Clone**:
    ```bash
-   git clone https://github.com/your-username/fredon-menu.git
+   git clone https://github.com/patrik-fredon/fredon-menu.git
    cd fredon-menu
    ```
 

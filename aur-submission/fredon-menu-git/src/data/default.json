@@ -1,0 +1,109 @@
+{
+  "menu": {
+    "title": "Fredon Menu",
+    "icon": "/usr/share/icons/hicolor/256x256/apps/fredon-menu.png",
+    "quote": "Your productivity companion",
+    "glass_effect": true,
+    "theme": {
+      "background_opacity": 0.9,
+      "blur_radius": 20,
+      "border_radius": 12,
+      "hover_duration": 200,
+      "colors": {
+        "background": "#1a1a1a",
+        "text": "#ffffff",
+        "button_bg": "#2a2a2a",
+        "button_hover": "#3a3a3a",
+        "button_text": "#ffffff",
+        "border": "#4a4a4a"
+      },
+      "fonts": {
+        "title_family": "sans-serif",
+        "title_size": 24,
+        "button_family": "sans-serif",
+        "button_size": 14,
+        "quote_family": "serif",
+        "quote_size": 12
+      }
+    },
+    "performance": {
+      "cache_enabled": true,
+      "cache_size_mb": 50,
+      "preload_icons": true,
+      "lazy_loading": true,
+      "max_concurrent_loads": 5
+    }
+  },
+  "buttons": [
+    {
+      "id": "firefox",
+      "name": "Firefox",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/firefox.png",
+      "command": "firefox",
+      "type": "app",
+      "description": "Web Browser",
+      "enabled": true,
+      "position": 0
+    },
+    {
+      "id": "terminal",
+      "name": "Terminal",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/Alacritty.png",
+      "command": "alacritty",
+      "type": "shell",
+      "description": "Terminal Emulator",
+      "enabled": true,
+      "position": 1
+    },
+    {
+      "id": "files",
+      "name": "Files",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/org.gnome.Nautilus.png",
+      "command": "nautilus",
+      "type": "app",
+      "description": "File Manager",
+      "enabled": true,
+      "position": 2
+    },
+    {
+      "id": "code",
+      "name": "VS Code",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/code.png",
+      "command": "code",
+      "type": "app",
+      "description": "Code Editor",
+      "enabled": true,
+      "position": 3
+    },
+    {
+      "id": "settings",
+      "name": "Settings",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/gnome-control-center.png",
+      "command": "gnome-control-center",
+      "type": "app",
+      "description": "System Settings",
+      "enabled": true,
+      "position": 4
+    }
+  ],
+  "categories": [
+    {
+      "id": "development",
+      "name": "Development",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/utilities-terminal.png",
+      "description": "Development Tools",
+      "button_ids": ["code"],
+      "enabled": true,
+      "position": 0
+    },
+    {
+      "id": "multimedia",
+      "name": "Multimedia",
+      "icon": "/usr/share/icons/hicolor/256x256/apps/multimedia.png",
+      "description": "Audio & Video Applications",
+      "button_ids": [],
+      "enabled": true,
+      "position": 1
+    }
+  ]
+}

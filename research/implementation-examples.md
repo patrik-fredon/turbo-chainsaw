@@ -1130,7 +1130,7 @@ class PerformanceTimer:
 # ~/.config/systemd/user/fredon-menu.service
 [Unit]
 Description=Fredon Menu Application Launcher
-Documentation=https://github.com/your-username/fredon-menu
+Documentation=https://github.com/patrik-fredon/fredon-menu
 PartOf=graphical-session.target
 After=graphical-session.target
 
