@@ -6,6 +6,7 @@ import os
 import shlex
 import subprocess
 import logging
+import time
 from typing import List, Optional, Dict, Any
 from enum import Enum
 
@@ -204,7 +205,6 @@ class CommandLauncher:
         Returns:
             ExecutionResult with execution details
         """
-        import time
         start_time = time.time()
 
         # Validate command security
