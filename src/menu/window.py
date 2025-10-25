@@ -50,9 +50,14 @@ class MenuWindow(Gtk.Window):
         self._build_ui()
         self._setup_style()
 
+        # Initialize display
+        self._update_display()
+
         # Connect signals
         self.connect('key-press-event', self._on_key_press)
         self.connect('focus-out-event', self._on_focus_out)
+        self.connect('button-press-event', self._on_button_press)
+        self.connect('delete-event', self._on_delete_event)
 
     def _setup_window(self):
         """Setup basic window properties."""
@@ -72,16 +77,12 @@ class MenuWindow(Gtk.Window):
         try:
             GtkLayerShell.init_for_window(self)
             GtkLayerShell.set_layer(self, GtkLayerShell.Layer.OVERLAY)
-            GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.LEFT, True)
-            GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT, True)
-            GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, True)
-            GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.BOTTOM, True)
 
-            # Set margins for centering
-            GtkLayerShell.set_margin(self, GtkLayerShell.Edge.LEFT, 100)
-            GtkLayerShell.set_margin(self, GtkLayerShell.Edge.RIGHT, 100)
-            GtkLayerShell.set_margin(self, GtkLayerShell.Edge.TOP, 50)
-            GtkLayerShell.set_margin(self, GtkLayerShell.Edge.BOTTOM, 50)
+            # Don't anchor to edges - this will allow the window to be centered
+            # GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.LEFT, False)
+            # GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.RIGHT, False)
+            # GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.TOP, False)
+            # GtkLayerShell.set_anchor(self, GtkLayerShell.Edge.BOTTOM, False)
 
             # Enable keyboard exclusive mode
             GtkLayerShell.set_keyboard_mode(self, GtkLayerShell.KeyboardMode.EXCLUSIVE)
@@ -107,8 +108,11 @@ class MenuWindow(Gtk.Window):
 
         # Title icon
         self.title_icon = Gtk.Image()
-        self.title_icon.set_from_icon_name("applications-other", Gtk.IconSize.DIALOG)
+        self.title_icon.set_size_request(64, 64)
         title_box.pack_start(self.title_icon, False, False, 0)
+
+        # Load icon from config
+        self._load_title_icon()
 
         # Title label
         self.title_label = Gtk.Label(label=self.config.title)
@@ -157,6 +161,35 @@ class MenuWindow(Gtk.Window):
         self.quote_label.set_justify(Gtk.Justification.CENTER)
         self.main_box.pack_start(self.quote_label, False, False, 0)
 
+    def _load_title_icon(self):
+        """Load the title icon from config path."""
+        try:
+            if self.config.icon and self.config.icon.strip():
+                # Try to load from file path
+                from pathlib import Path
+                icon_path = Path(self.config.icon)
+                if icon_path.exists():
+                    from gi.repository import GdkPixbuf
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                        str(icon_path), 64, 64, True
+                    )
+                    self.title_icon.set_from_pixbuf(pixbuf)
+                    logger.info(f"Loaded title icon from {icon_path}")
+                    return
+                else:
+                    # Try to load as icon name
+                    self.title_icon.set_from_icon_name(self.config.icon, Gtk.IconSize.DIALOG)
+                    logger.info(f"Loaded title icon as icon name: {self.config.icon}")
+                    return
+            else:
+                # Use fallback icon
+                self.title_icon.set_from_icon_name("applications-other", Gtk.IconSize.DIALOG)
+                logger.info("Using fallback title icon")
+        except Exception as e:
+            logger.error(f"Failed to load title icon: {e}")
+            # Use fallback icon
+            self.title_icon.set_from_icon_name("applications-other", Gtk.IconSize.DIALOG)
+
     def _setup_style(self):
         """Setup CSS styling."""
         style_provider = Gtk.CssProvider()
@@ -182,14 +215,14 @@ class MenuWindow(Gtk.Window):
 
     def _get_css_file_path(self):
         """Get path to custom CSS file."""
-        import os
+        from pathlib import Path
         css_paths = [
-            os.path.expanduser("~/.config/fredon-menu/style.css"),
-            os.path.join(os.path.dirname(__file__), "style.css"),
+            Path.home() / ".config" / "fredon-menu" / "style.css",
+            Path(__file__).parent / "style.css",
         ]
 
         for path in css_paths:
-            if os.path.exists(path):
+            if path.exists():
                 return path
         return None
 
@@ -199,7 +232,6 @@ class MenuWindow(Gtk.Window):
         .menu-window {{
             background: rgba(26, 26, 26, {self.config.theme.background_opacity});
             border-radius: {self.config.theme.border_radius}px;
-            backdrop-filter: blur({self.config.theme.blur_radius}px);
         }}
 
         .menu-title {{
@@ -240,7 +272,6 @@ class MenuWindow(Gtk.Window):
 
         .category-button:hover {{
             border-color: {self.config.theme.colors['text']};
-            transform: scale(1.02);
         }}
 
         .pagination-button {{
@@ -408,11 +439,20 @@ class MenuWindow(Gtk.Window):
             # Category button - show sub-menu
             self.show_category_menu(button_item.id)
         else:
-            # Application button - launch and close
+            # Application button - hide menu immediately, then execute command
             self.hide()
-            # Signal to main app to handle command execution
             if hasattr(self, 'command_callback'):
-                self.command_callback(button_item)
+                # Execute command asynchronously to avoid blocking
+                import threading
+                def execute_async():
+                    try:
+                        self.command_callback(button_item)
+                    except Exception as e:
+                        logger.error(f"Error in async command execution: {e}")
+
+                thread = threading.Thread(target=execute_async, daemon=True)
+                thread.start()
+                logger.debug(f"Started async execution for {button_item.name}")
 
     def _on_back_clicked(self, button):
         """Handle back button click."""
@@ -435,6 +475,7 @@ class MenuWindow(Gtk.Window):
         keyname = Gdk.keyval_name(keyval)
 
         if keyname == 'Escape':
+            logger.debug("ESC key pressed, hiding menu")
             self.hide()
             return True
         elif keyname == 'Left' or keyname == 'KP_Left':
@@ -463,8 +504,51 @@ class MenuWindow(Gtk.Window):
 
     def _on_focus_out(self, widget, event):
         """Handle focus out event."""
-        # Hide menu when it loses focus
+        # Hide menu when it loses focus (click outside)
+        logger.debug("Menu lost focus, hiding")
         self.hide()
+
+    def _on_button_press(self, widget, event):
+        """Handle button press events for click-outside detection."""
+        # Check if click is outside the window content area
+        if event.window == self.get_window():
+            # Get the allocation of the main content
+            allocation = self.get_allocation()
+            x, y = event.x, event.y
+
+            # Check if click is outside window bounds (with small tolerance)
+            tolerance = 5
+            if (x < -tolerance or x > allocation.width + tolerance or
+                y < -tolerance or y > allocation.height + tolerance):
+                logger.debug("Click detected outside menu, hiding")
+                self.hide()
+                return True
+
+        return False
+
+    def _on_delete_event(self, widget, event):
+        """Handle window delete event."""
+        logger.debug("Window delete event, hiding menu")
+        self.hide()
+        return True  # Prevent actual destruction
+
+    def show(self):
+        """Show the window with proper focus management."""
+        super().show()
+        # Ensure the window grabs focus and keyboard input
+        self.present_with_time(Gdk.CURRENT_TIME)
+
+        # Add a small delay to ensure focus is properly set
+        GLib.timeout_add(50, self._ensure_focus)
+
+    def _ensure_focus(self):
+        """Ensure window has focus after showing."""
+        if self.get_visible():
+            self.grab_focus()
+            # Try to grab keyboard focus for exclusive input
+            if self.get_window():
+                self.get_window().focus(Gdk.CURRENT_TIME)
+        return False  # Don't repeat
 
     def set_command_callback(self, callback):
         """Set callback for command execution."""

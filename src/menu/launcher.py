@@ -339,10 +339,42 @@ class CommandLauncher:
     def _execute_app_command(self, command: str, working_dir: Optional[str],
                            env: Optional[Dict[str, str]], start_time: float) -> ExecutionResult:
         """Execute desktop application."""
-        if command.endswith('.desktop'):
-            # Execute desktop file
-            desktop_command = f"gtk-launch {os.path.basename(command)}"
-            return self._execute_shell_command(desktop_command, working_dir, env, start_time)
-        else:
-            # Execute application directly
-            return self._execute_shell_command(command, working_dir, env, start_time)
+        try:
+            if command.endswith('.desktop'):
+                # Execute desktop file
+                desktop_command = f"gtk-launch {os.path.basename(command)}"
+                # Launch application in background without waiting
+                args = shlex.split(desktop_command)
+                subprocess.Popen(
+                    args,
+                    cwd=working_dir,
+                    env=env,
+                    start_new_session=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+            else:
+                # Execute application directly in background
+                args = shlex.split(command)
+                subprocess.Popen(
+                    args,
+                    cwd=working_dir,
+                    env=env,
+                    start_new_session=True,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+
+            # For apps, we don't wait for completion
+            return ExecutionResult(
+                success=True,
+                exit_code=0,
+                execution_time_ms=(time.time() - start_time) * 1000
+            )
+
+        except Exception as e:
+            return ExecutionResult(
+                success=False,
+                error=f"Failed to launch application: {e}",
+                execution_time_ms=(time.time() - start_time) * 1000
+            )

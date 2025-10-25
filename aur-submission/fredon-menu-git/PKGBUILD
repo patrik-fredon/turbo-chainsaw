@@ -5,7 +5,7 @@ pkgver=r8.4f0e1b4
 pkgrel=1
 pkgdesc="A modern, customizable application launcher for Hyprland/Wayland (git version)"
 arch=('x86_64')
-url="https://github.com/patrik-fredon/fredon-menu"
+url="https://github.com/patrik-fredon/turbo-chainsaw"
 license=('MIT')
 depends=(
     'python>=3.11'
@@ -30,7 +30,7 @@ optdepends=(
 provides=("${pkgname%-git}")
 conflicts=("${pkgname%-git}")
 source=(
-    "$pkgname::git+https://github.com/patrik-fredon/fredon-menu.git#branch=main"
+    "$pkgname::git+https://github.com/patrik-fredon/turbo-chainsaw.git#branch=main"
 )
 sha256sums=(
     'SKIP'
@@ -38,7 +38,12 @@ sha256sums=(
 
 pkgver() {
     cd "$pkgname"
-    git describe --long --tags | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-//g'
+    if git describe --long --tags >/dev/null 2>&1; then
+        git describe --long --tags | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-//g'
+    else
+        # Fallback when no tags exist
+        printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+    fi
 }
 
 build() {

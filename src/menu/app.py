@@ -116,8 +116,9 @@ class FredonMenu:
         """Hide the menu."""
         if self.window:
             try:
-                self.window.hide()
-                logger.info("Menu hidden")
+                if self.window.get_visible():
+                    self.window.hide()
+                    logger.info("Menu hidden")
             except Exception as e:
                 logger.error(f"Failed to hide menu: {e}")
 
@@ -151,18 +152,28 @@ class FredonMenu:
 
             if result.success:
                 logger.info(f"Command executed successfully: {button.name}")
-                self._show_success_notification(f"Launched: {button.name}")
+                # Show notification without blocking
+                try:
+                    self._show_success_notification(f"Launched: {button.name}")
+                except Exception as e:
+                    logger.warning(f"Failed to show success notification: {e}")
             else:
                 logger.error(f"Command execution failed: {result.error}")
-                self._show_error_notification(
-                    f"Failed to launch {button.name}: {result.error}"
-                )
+                try:
+                    self._show_error_notification(
+                        f"Failed to launch {button.name}: {result.error}"
+                    )
+                except Exception as e:
+                    logger.warning(f"Failed to show error notification: {e}")
 
         except Exception as e:
             logger.error(f"Unexpected error executing command: {e}")
-            self._show_error_notification(
-                f"Unexpected error launching {button.name}: {e}"
-            )
+            try:
+                self._show_error_notification(
+                    f"Unexpected error launching {button.name}: {e}"
+                )
+            except Exception as notification_error:
+                logger.warning(f"Failed to show error notification: {notification_error}")
 
     def _show_success_notification(self, message: str):
         """Show success notification."""
@@ -250,9 +261,13 @@ class FredonMenu:
                 self.config_manager.stop_monitoring()
 
             # Save icon cache
-            from .utils.cache import IconCacheManager
-            cache = IconCacheManager()
-            cache.save_cache()
+            try:
+                from ..utils.cache import IconCacheManager
+                cache = IconCacheManager()
+                cache.save_cache()
+            except ImportError:
+                # Import failed, skip cache saving
+                logger.warning("Could not import IconCacheManager for cache cleanup")
 
         except Exception as e:
             logger.error(f"Error during cleanup: {e}")

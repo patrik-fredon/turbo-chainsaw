@@ -14,7 +14,7 @@ import gi
 gi.require_version('GdkPixbuf', '2.0')
 from gi.repository import GdkPixbuf
 
-from ..menu.models import IconCache, IconFormat
+from menu.models import IconCache, IconFormat
 
 logger = logging.getLogger(__name__)
 

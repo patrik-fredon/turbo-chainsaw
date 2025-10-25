@@ -104,9 +104,9 @@ install_from_source() {
 
     # Clone repository
     print_info "Cloning repository..."
-    git clone https://github.com/patrik-fredon/fredon-menu.git
+    git clone https://github.com/patrik-fredon/turbo-chainsaw.git
 
-    cd fredon-menu
+    cd turbo-chainsaw
 
     # Create virtual environment
     print_info "Creating virtual environment..."
@@ -217,7 +217,7 @@ install_generic() {
     print_info "4. Install watchdog: pip install watchdog"
     print_info ""
     print_info "Then run the source installation:"
-    print_info "  git clone https://github.com/patrik-fredon/fredon-menu.git"
+    print_info "  git clone https://github.com/patrik-fredon/turbo-chainsaw.git"
     print_info "  cd fredon-menu"
     print_info "  python3 -m venv venv"
     print_info "  source venv/bin/activate"
@@ -251,7 +251,7 @@ show_post_install() {
     print_info "   fredon-menu --version"
     echo ""
     print_info "Documentation: https://fredon-menu.readthedocs.io/"
-    print_info "Issues: https://github.com/patrik-fredon/fredon-menu/issues"
+    print_info "Issues: https://github.com/patrik-fredon/turbo-chainsaw/issues"
 }
 
 # Main installation function

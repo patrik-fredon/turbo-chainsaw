@@ -11,7 +11,22 @@ gi.require_version('Gdk', '3.0')
 from gi.repository import Gtk, GdkPixbuf, GLib
 
 from .models import Button, Category
-from ..utils.cache import IconCacheManager
+
+try:
+    from ..utils.cache import IconCacheManager
+except ImportError:
+    # Fallback for running without proper package structure
+    try:
+        import sys
+        import os
+        sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
+        from utils.cache import IconCacheManager
+    except ImportError:
+        # If all else fails, create a dummy cache manager
+        logger.warning("Could not import IconCacheManager, using fallback")
+        class IconCacheManager:
+            def get_gdk_pixbuf(self, icon_path, size=(48, 48)):
+                return None
 
 logger = logging.getLogger(__name__)
 
@@ -94,7 +109,7 @@ class MenuButton(Gtk.Button):
             desc_style_context.add_class("button-description")
             self.description_label.set_halign(Gtk.Align.START)
             self.description_label.set_justify(Gtk.Justification.LEFT)
-            self.description_label.set_wrap(True)
+            self.description_label.set_line_wrap(True)
             self.description_label.set_max_width_chars(40)
             text_box.pack_start(self.description_label, False, False, 0)
 
